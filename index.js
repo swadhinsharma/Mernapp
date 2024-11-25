@@ -40,35 +40,53 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect(process.env.MONGO_URL)
 
 
-app.get('/api_mobile', async (req, res) => {
-    try {
-        const data = await fetModel.find({});
-        res.json(data);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        res.status(500).send('Internal Server Error');
-    }
-  });
+const path = require('path');
 
-  app.post('/api_mobile', upload.single('image'), async (req, res) => {
-    console.log(req.body); // Form fields
-    console.log(req.file); // Uploaded file information
-  
-    try {
-      // Add the image file path to the form data
-      const formData = {
-        ...req.body,
-        img: req.file ? req.file.path : '', // Save the uploaded file path
-      };
-  
-      const data = await fetModel.create(formData);
-      console.log(data);
-      res.json(data);
-    } catch (error) {
-      console.error('Error saving data:', error);
-      res.status(500).send('Internal Server Error');
-    }
-  });
+// Serve the 'uploads' folder publicly
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/api_mobile', async (req, res) => {
+  try {
+    const data = await fetModel.find({});
+
+    // Format the data to include full URLs for images
+    const formattedData = data.map(item => ({
+      ...item._doc,
+      img: item.img ? `https://mernapp-tt2l.onrender.com/uploads/${path.basename(item.img)}` : '', // Full public URL
+    }));
+
+    res.json(formattedData);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/api_mobile', upload.single('image'), async (req, res) => {
+  console.log(req.body); // Form fields
+  console.log(req.file); // Uploaded file information
+
+  try {
+    // Add the image file's public URL to the form data
+    const formData = {
+      ...req.body,
+      img: req.file ? `/uploads/${req.file.filename}` : '', // Publicly accessible URL
+    };
+
+    const data = await fetModel.create(formData);
+    console.log(data);
+
+    // Respond with the saved data including the public URL
+    res.json({
+      ...data._doc,
+      img: data.img ? `https://mernapp-tt2l.onrender.com${data.img}` : '', // Full public URL
+    });
+  } catch (error) {
+    console.error('Error saving data:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
   
 
 
