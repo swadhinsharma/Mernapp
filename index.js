@@ -73,7 +73,7 @@ app.post('/api_mobile', upload.single('image'), async (req, res) => {
     // Add the image file path to the form data
     const formData = {
       ...req.body,
-      img: `http://localhost:${3001}/upload/images/${req.file.filename}`
+      img: `http://localhost:${3001}/images/${req.file.filename}`
     };
 
     const data = await fetModel.create(formData);
