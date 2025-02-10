@@ -53,7 +53,7 @@ app.use('/images',express.static('upload/images'))
 
 
 // Serve the 'uploads' folder publicly
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api_mobile', async (req, res) => {
     try {
@@ -73,7 +73,7 @@ app.post('/api_mobile', upload.single('image'), async (req, res) => {
     // Add the image file path to the form data
     const formData = {
       ...req.body,
-      img: `http://localhost:${3001}/images/${req.file.filename}`
+      img: `http://localhost:${3001}/upload/images/${req.file.filename}`
     };
 
     const data = await fetModel.create(formData);
