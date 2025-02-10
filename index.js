@@ -7,7 +7,7 @@ const registerModel = require('./module/newuser.js');
 const { body, validationResult } = require('express-validator');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' }); // Set the destination for uploaded files
+const path = require('path');
 
 const Jwt = require('jsonwebtoken');
 const CartItem = require('./module/makeOrder.js');
@@ -17,14 +17,7 @@ require("dotenv").config
 const jwtKey = process.env.SECREAT_KEY ;
 const port = process.env.PORT;
 require('dotenv').config()
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
+
 
 
 
@@ -40,7 +33,24 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect(process.env.MONGO_URL)
 
 
-const path = require('path');
+
+
+const storage=multer.diskStorage({
+  destination:'./upload/images',
+  filename:(req,file,cb)=>{
+      return cb(null,`${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
+  }
+})
+
+const upload =multer({storage:storage})
+
+//creating uplode Endpoint for images
+
+app.use('/images',express.static('upload/images'))
+
+
+
+
 
 // Serve the 'uploads' folder publicly
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -67,20 +77,15 @@ app.post('/api_mobile', upload.single('image'), async (req, res) => {
   console.log(req.file); // Uploaded file information
 
   try {
-    // Add the image file's public URL to the form data
+    // Add the image file path to the form data
     const formData = {
       ...req.body,
-      img: req.file ? `/uploads/${req.file.filename}` : '', // Publicly accessible URL
+      img: `http://localhost:${3001}/images/${req.file.filename}`
     };
 
     const data = await fetModel.create(formData);
     console.log(data);
-
-    // Respond with the saved data including the public URL
-    res.json({
-      ...data._doc,
-      img: data.img ? `https://mernapp-tt2l.onrender.com${data.img}` : '', // Full public URL
-    });
+    res.json(data);
   } catch (error) {
     console.error('Error saving data:', error);
     res.status(500).send('Internal Server Error');
