@@ -47,13 +47,18 @@ const upload =multer({storage:storage})
 //creating uplode Endpoint for images
 
 app.use('/images',express.static('upload/images'))
-
-
-
-
-
-// Serve the 'uploads' folder publicly
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.post("/upload",upload.single('product'),(req,res)=>{
+//   res.json({
+//       success:1,
+//       Image_url:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url2:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url3:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url4:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url5:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url6:`http://localhost:${port}/images/${req.file.filename}`,
+//       Image_url7:`http://localhost:${port}/images/${req.file.filename}`,
+//   })
+// })
 
 app.get('/api_mobile', async (req, res) => {
     try {
@@ -65,25 +70,27 @@ app.get('/api_mobile', async (req, res) => {
     }
   });
 
-app.post('/api_mobile', upload.single('image'), async (req, res) => {
-  console.log(req.body); // Form fields
-  console.log(req.file); // Uploaded file information
+  app.post('/api_mobile', upload.single('image'), async (req, res) => {
+    console.log(req.body); // Form fields
+    console.log(req.file); // Uploaded file information
+  
+    try {
+      // Add the image file path to the form data
+      const formData = {
+        ...req.body,
+        img: `http://localhost:${3001}/images/${req.file.filename}`
+      };
+  
+      const data = await fetModel.create(formData);
+      console.log(data);
+      res.json(data);
+    } catch (error) {
+      console.error('Error saving data:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+  
 
-  try {
-    // Add the image file path to the form data
-    const formData = {
-      ...req.body,
-      img: `http://localhost:${3001}/images/${req.file.filename}`
-    };
-
-    const data = await fetModel.create(formData);
-    console.log(data);
-    res.json(data);
-  } catch (error) {
-    console.error('Error saving data:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
   
 
