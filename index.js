@@ -56,21 +56,14 @@ app.use('/images',express.static('upload/images'))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api_mobile', async (req, res) => {
-  try {
-    const data = await fetModel.find({});
-
-    // Format the data to include full URLs for images
-    const formattedData = data.map(item => ({
-      ...item._doc,
-      img: item.img ? `https://mernapp-tt2l.onrender.com/uploads/${path.basename(item.img)}` : '', // Full public URL
-    }));
-
-    res.json(formattedData);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+    try {
+        const data = await fetModel.find({});
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        res.status(500).send('Internal Server Error');
+    }
+  });
 
 app.post('/api_mobile', upload.single('image'), async (req, res) => {
   console.log(req.body); // Form fields
